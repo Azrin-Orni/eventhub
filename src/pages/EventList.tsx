@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../services/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, addDoc } from "firebase/firestore";
+import { useAuth } from "../context/AuthContext";
 
 interface Event {
   id: string;
@@ -11,8 +12,12 @@ interface Event {
 }
 
 const EventList: React.FC = () => {
+  const { user, role } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bookingStatus, setBookingStatus] = useState<{ [key: string]: string }>(
+    {}
+  );
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -32,6 +37,32 @@ const EventList: React.FC = () => {
     fetchEvents();
   }, []);
 
+  const handleBookEvent = async (eventId: string) => {
+    if (!user) {
+      setBookingStatus({
+        ...bookingStatus,
+        [eventId]: "Please log in to book",
+      });
+      return;
+    }
+    if (role !== "attendee") {
+      setBookingStatus({
+        ...bookingStatus,
+        [eventId]: "Only attendee can book events",
+      });
+      return;
+    }
+    try {
+      await addDoc(collection(db, "bookings"), {
+        userId: user.uid,
+        eventId,
+        createdAt: new Date().toISOString(),
+      });
+      setBookingStatus({ ...bookingStatus, [eventId]: "Booked Sucessfully!" });
+    } catch (err) {
+      setBookingStatus({ ...bookingStatus, [eventId]: "Failed to book event" });
+    }
+  };
   if (loading) {
     return <div className="container mx-auto p-4">Loading...</div>;
   }
@@ -49,6 +80,20 @@ const EventList: React.FC = () => {
               <p className="text-gray-600">{event.description}</p>
               <p className="text-sm">Date: {event.date}</p>
               <p className="text-sm">Location: {event.location}</p>
+              <button
+                onClick={() => handleBookEvent(event.id)}
+                className="bg-slate-500 text-white p-2 rounded hover:bg-slate-700"
+                disabled={bookingStatus[event.id]?.includes("successfully")}
+              >
+                {bookingStatus[event.id]?.includes("successfully")
+                  ? "Booked"
+                  : "Book Event"}
+              </button>
+              {bookingStatus[event.id] && (
+                <p className="mt-2 text-sm ${bookingStatus[event.id].includes('successfully')?'text-green-500':'text-red-500'">
+                  {bookingStatus[event.id]}
+                </p>
+              )}
             </div>
           ))}
         </div>

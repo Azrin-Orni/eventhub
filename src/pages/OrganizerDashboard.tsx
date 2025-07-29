@@ -7,6 +7,7 @@ const OrganizerDashboard: React.FC = () => {
       <h1 className="text-slate-800 font-semibold text-2xl">
         Organizer Dashboard
       </h1>
+
       <EventForm />
     </div>
   );
