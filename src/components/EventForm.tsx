@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { db, auth } from "../services/firebase";
+import { db, auth, storage } from "../services/firebase";
 import { collection, addDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface EventFormInputs {
   title: string;
   description: string;
   date: string;
   location: string;
+  image?: FileList;
 }
 
 const EventForm: React.FC = () => {
@@ -27,8 +29,19 @@ const EventForm: React.FC = () => {
         setError("You must be logged in to create an event");
         return;
       }
+
+      let imageUrl = "";
+      if (data.image && data.image[0]) {
+        const imageRef = ref(
+          storage,
+          `events/${auth.currentUser.uid}/${data.image[0].name}`
+        );
+        await uploadBytes(imageRef, data.image[0]);
+        imageUrl = await getDownloadURL(imageRef);
+      }
       await addDoc(collection(db, "events"), {
         ...data,
+        imageUrl,
         organizerId: auth.currentUser.uid,
         createdAt: new Date().toISOString(),
       });
@@ -81,6 +94,15 @@ const EventForm: React.FC = () => {
           {errors.location && (
             <p className="text-red-500 text-sm">{errors.location.message}</p>
           )}
+        </div>
+        <div>
+          <label className="block text-sm font-medium">Image</label>
+          <input
+            {...register("image")}
+            className="w-full p-2 border rounded"
+            type="file"
+            accept="image/*"
+          />
         </div>
         {/* submit button */}
         <button

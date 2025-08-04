@@ -80,13 +80,13 @@ const OrganizerDashboard: React.FC = () => {
                   <div className="flex space-x-2 mt-2">
                     <button
                       onClick={() => setEditingEvent(event)}
-                      className="bg-cyan-900 text-white p-2 rounded hover:bg-cyan-700"
+                      className="bg-slate-700 hover:bg-slate-500 text-white px-4 py-2 border rounded"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDeleteEvent(event.id)}
-                      className="bg-red-800 text-white p-2 rounded hover:bg-red-700"
+                      className="bg-slate-400 hover:bg-slate-500 text-white px-4 py-2 "
                     >
                       Delete
                     </button>
