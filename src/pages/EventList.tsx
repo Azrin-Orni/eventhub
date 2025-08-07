@@ -9,6 +9,7 @@ interface Event {
   description: string;
   date: string;
   location: string;
+  imageUrl: string;
 }
 
 const EventList: React.FC = () => {
@@ -18,6 +19,7 @@ const EventList: React.FC = () => {
   const [bookingStatus, setBookingStatus] = useState<{ [key: string]: string }>(
     {}
   );
+  const [locationFilter, setLocationFilter] = useState("");
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -63,6 +65,11 @@ const EventList: React.FC = () => {
       setBookingStatus({ ...bookingStatus, [eventId]: "Failed to book event" });
     }
   };
+
+  const filteredEvents = events.filter((event) =>
+    event.location.toLowerCase().includes(locationFilter.toLowerCase())
+  );
+
   if (loading) {
     return <div className="container mx-auto p-4">Loading...</div>;
   }
@@ -70,7 +77,19 @@ const EventList: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-slate-800 font-semibold text-2xl">Events</h1>
-      {events.length === 0 ? (
+      <div className="mb-4">
+        <label className="block text-slate-sm font-medium">
+          Filter By Location
+        </label>
+        <input
+          type="text"
+          value={locationFilter}
+          onChange={(e) => setLocationFilter(e.target.value)}
+          className="w-full p-2 border rounded"
+          placeholder="Enter location..."
+        />
+      </div>
+      {filteredEvents.length === 0 ? (
         <p>No events found</p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
