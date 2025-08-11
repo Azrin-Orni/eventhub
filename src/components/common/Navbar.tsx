@@ -25,6 +25,11 @@ const Navbar: React.FC = () => {
           </Link>
           {user ? (
             <>
+              {role === "attendee" && (
+                <Link to="/my-bookings" className="hover:underline">
+                  My Bookings
+                </Link>
+              )}
               {role === "organizer" && (
                 <Link to="/organizer" className="hover:underline">
                   Organizer

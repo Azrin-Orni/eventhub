@@ -93,7 +93,7 @@ const EventList: React.FC = () => {
         <p>No events found</p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {events.map((event) => (
+          {filteredEvents.map((event) => (
             <div key={event.id} className="border rounded p-4 bg-white shadow">
               <h2 className="text-xl font-semibold">{event.title}</h2>
               <p className="text-gray-600">{event.description}</p>

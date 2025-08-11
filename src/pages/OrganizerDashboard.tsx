@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { db, auth } from "../services/firebase";
 import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import EventForm from "../components/EventForm";
@@ -11,6 +11,7 @@ interface Event {
   date: string;
   location: string;
   organizerId: string;
+  imageUrl?: string;
 }
 
 const OrganizerDashboard: React.FC = () => {
@@ -18,23 +19,24 @@ const OrganizerDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      if (!auth.currentUser) return;
-      try {
-        const querySnapshot = await getDocs(collection(db, "events"));
-        const eventData = querySnapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() } as Event))
-          .filter((event) => event.organizerId === auth.currentUser!.uid);
-        setEvents(eventData);
-      } catch (err) {
-        console.log("Error fetching events:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEvents();
+  const fetchEvents = useCallback(async () => {
+    if (!auth.currentUser) return;
+    try {
+      const querySnapshot = await getDocs(collection(db, "events"));
+      const eventData = querySnapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() } as Event))
+        .filter((event) => event.organizerId === auth.currentUser!.uid);
+      setEvents(eventData);
+    } catch (err) {
+      console.log("Error fetching events:", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   const handleDeleteEvent = async (eventId: string) => {
     try {
@@ -58,11 +60,14 @@ const OrganizerDashboard: React.FC = () => {
       {editingEvent ? (
         <EventEditForm
           event={editingEvent}
-          onClose={() => setEditingEvent(null)}
+          onClose={() => {
+            setEditingEvent(null);
+            fetchEvents();
+          }}
         />
       ) : (
         <>
-          <EventForm />
+          <EventForm onEventCreated={fetchEvents} />
           <h2 className="text-xl font-semibold mt-8 mb-4">Your Events</h2>
           {events.length === 0 ? (
             <p>No events found.</p>

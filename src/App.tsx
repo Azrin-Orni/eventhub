@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import EventList from "./pages/EventList";
 import OrganizerDashboard from "./pages/OrganizerDashboard";
+import MyBookings from "./pages/MyBookings";
 
 const App: React.FC = () => {
   return (
@@ -30,6 +31,7 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/my-bookings" element={<MyBookings />} />
             </Routes>
           </main>
           <Footer />
